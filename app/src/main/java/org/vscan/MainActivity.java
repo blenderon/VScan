@@ -13,9 +13,33 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.content.Intent;
+import android.widget.Button;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import com.google.zxing.integration.android.IntentIntegrator;
+import com.google.zxing.integration.android.IntentResult;
+
+import android.app.Activity;
+import android.app.AlertDialog.Builder;
+import android.content.Context;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
+import android.os.Bundle;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.widget.Button;
+import android.widget.EditText;
 
 public class MainActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener {
+        implements NavigationView.OnNavigationItemSelectedListener, View.OnClickListener {
+
+    private Button scanBtn;
+    private TextView formatTxt, contentTxt;
+
+    EditText editRollno;
+    Button btnSearch,btnViewAll;
+    SQLiteDatabase db;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -24,14 +48,6 @@ public class MainActivity extends AppCompatActivity
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-        });
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -41,6 +57,29 @@ public class MainActivity extends AppCompatActivity
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
+
+
+        scanBtn = (Button)findViewById(R.id.scan_button);
+        scanBtn.setOnClickListener(this);
+        formatTxt = (TextView)findViewById(R.id.scan_format);
+        contentTxt = (TextView)findViewById(R.id.scan_content);
+
+        editRollno=(EditText)findViewById(R.id.editRollno);
+        btnViewAll=(Button)findViewById(R.id.btnViewAll);
+        btnViewAll.setOnClickListener(this);
+        btnSearch=(Button)findViewById(R.id.btnSearch);
+        btnSearch.setOnClickListener(this);
+
+        db=openOrCreateDatabase("VeganDB", Context.MODE_PRIVATE, null);
+        db.execSQL("CREATE TABLE IF NOT EXISTS products(barcode VARCHAR,name VARCHAR,status VARCHAR);");
+
+        Cursor c=db.rawQuery("SELECT * FROM products", null);
+        if(c.getCount()==0)
+        {
+            db.execSQL("INSERT INTO products VALUES('7290013085610','פסטה פנה אורגני','VEGAN');");
+            db.execSQL("INSERT INTO products VALUES('7290013085611','פסטה פנה','NOT VEGAN');");
+        }
+
     }
 
     @Override
@@ -98,5 +137,81 @@ public class MainActivity extends AppCompatActivity
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
+    }
+
+
+    @Override
+    public void onClick(View v) {
+        if(v.getId()==R.id.scan_button){
+            //scan
+            IntentIntegrator scanIntegrator = new IntentIntegrator(this);
+            scanIntegrator.initiateScan();
+        }
+        if(v==btnViewAll)
+        {
+            Cursor c=db.rawQuery("SELECT * FROM products", null);
+            if(c.getCount()==0)
+            {
+                showMessage("שגיאה", "אין מוצרים");
+                return;
+            }
+            StringBuffer buffer=new StringBuffer();
+            while(c.moveToNext())
+            {
+                buffer.append("ברקוד: "+c.getString(0)+"\n");
+                buffer.append("שם: "+c.getString(1)+"\n");
+                buffer.append("טבעונות "+c.getString(2)+"\n\n");
+            }
+            showMessage("פרטים", buffer.toString());
+        }
+        if(v==btnSearch)
+        {
+            Cursor c=db.rawQuery("SELECT * FROM products where barcode='"+editRollno.getText()+"'", null);
+            if(c.getCount()==0)
+            {
+                showMessage("שגיאה", "לא נמצא");
+                return;
+            }
+            StringBuffer buffer=new StringBuffer();
+            while(c.moveToNext())
+            {
+                buffer.append("ברקוד: "+c.getString(0)+"\n");
+                buffer.append("שם: "+c.getString(1)+"\n");
+                buffer.append("טבעונות "+c.getString(2)+"\n\n");
+            }
+            showMessage("פרטים", buffer.toString());
+        }
+    }
+
+    public void onActivityResult(int requestCode, int resultCode, Intent intent) {
+        if(requestCode == IntentIntegrator.REQUEST_CODE) {
+            //retrieve scan result
+            IntentResult scanningResult = IntentIntegrator.parseActivityResult(requestCode, resultCode, intent);
+            if (scanningResult != null) {
+                //we have a result
+                String scanContent = scanningResult.getContents();
+                String scanFormat = scanningResult.getFormatName();
+                formatTxt.setText("FORMAT: " + scanFormat);
+                contentTxt.setText("CONTENT: " + scanContent);
+            } else{
+                Toast toast = Toast.makeText(getApplicationContext(),
+                        "No scan data received!", Toast.LENGTH_SHORT);
+                toast.show();
+            }
+        }
+    }
+
+    public void showMessage(String title,String message)
+    {
+        Builder builder=new Builder(this);
+        builder.setCancelable(true);
+        builder.setTitle(title);
+        builder.setMessage(message);
+        builder.show();
+    }
+    public void clearText()
+    {
+        editRollno.setText("");
+        editRollno.requestFocus();
     }
 }
