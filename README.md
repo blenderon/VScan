@@ -1,1 +1,2 @@
-Native Android App for approving vegan products and ingredients
+Native Android App for approving vegan products and ingredients.
+TBD
