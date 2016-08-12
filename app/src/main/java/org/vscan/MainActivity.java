@@ -48,15 +48,6 @@ public class MainActivity extends AppCompatActivity
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-        });
-
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
@@ -152,7 +143,7 @@ public class MainActivity extends AppCompatActivity
             IntentIntegrator scanIntegrator = new IntentIntegrator(this);
             scanIntegrator.initiateScan();
         }
-        if(view==btnViewAll)
+        if(v==btnViewAll)
         {
             Cursor c=db.rawQuery("SELECT * FROM products", null);
             if(c.getCount()==0)
@@ -169,7 +160,7 @@ public class MainActivity extends AppCompatActivity
             }
             showMessage("פרטים", buffer.toString());
         }
-        if(view==btnSearch)
+        if(v==btnSearch)
         {
             Cursor c=db.rawQuery("SELECT * FROM products where barcode='"+editRollno.getText()+"'", null);
             if(c.getCount()==0)
