@@ -1,6 +1,9 @@
 package org.vscan;
 
 import android.app.AlertDialog;
+import android.app.Fragment;
+import android.app.FragmentManager;
+import android.app.FragmentTransaction;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
@@ -30,6 +33,7 @@ import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
 import com.journeyapps.barcodescanner.BarcodeCallback;
 import com.journeyapps.barcodescanner.BarcodeResult;
+import com.journeyapps.barcodescanner.CaptureManager;
 import com.journeyapps.barcodescanner.DecoratedBarcodeView;
 
 import java.util.List;
@@ -40,9 +44,11 @@ import java.util.List;
  */
 public class CustomCaptureActivity extends AppCompatActivity implements
         NavigationView.OnNavigationItemSelectedListener {
+//
+//    private CaptureManager capture;
 
     private static final String TAG = CustomCaptureActivity.class.getSimpleName();
-    private DecoratedBarcodeView barcodeView;
+    public static DecoratedBarcodeView barcodeView;
 
 //    EditText editRollno;
 //    Button btnSearch,btnViewAll;
@@ -55,12 +61,24 @@ public class CustomCaptureActivity extends AppCompatActivity implements
     private BarcodeCallback callback = new BarcodeCallback() {
         @Override
         public void barcodeResult(BarcodeResult result) {
+
             if (result.getText() != null) {
                 barcodeView.setStatusText(result.getText());
             }
             //Added preview of scanned barcode
-            ImageView imageView = (ImageView) findViewById(R.id.barcode_scanner);
-            imageView.setImageBitmap(result.getBitmapWithResultPoints(Color.YELLOW));
+            ResultFragment.te = result.getText();
+
+
+            System.out.println("here6");
+            barcodeView.pause();
+            barcodeView.setVisibility(View.GONE);
+
+            Fragment fr = new ResultFragment();
+            fr.setArguments(null);
+            FragmentManager fm = getFragmentManager();
+            FragmentTransaction fragmentTransaction = fm.beginTransaction();
+            fragmentTransaction.replace(R.id.fragment_result, fr);
+            fragmentTransaction.commit();
         }
 
         @Override
@@ -101,13 +119,31 @@ public class CustomCaptureActivity extends AppCompatActivity implements
         }
 
         barcodeView = (DecoratedBarcodeView) findViewById(R.id.barcode_scanner);
-        barcodeView.decodeContinuous(callback);
+//        capture = new CaptureManager(this, barcodeView);
+//        capture.initializeFromIntent(getIntent(), savedInstanceState);
+//        capture.decode();
+        barcodeView.decodeSingle(callback);
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+//        capture.onSaveInstanceState(outState);
     }
 
     @Override
     protected void onResume() {
         super.onResume();
 
+        System.out.println("here3");
+        barcodeView.setVisibility(View.VISIBLE);
+        barcodeView.resume();
+//        barcodeView.decodeSingle(callback);
+    }
+
+    public void resume() {
+        System.out.println("here44");
+        barcodeView.setVisibility(View.VISIBLE);
         barcodeView.resume();
     }
 
@@ -115,12 +151,14 @@ public class CustomCaptureActivity extends AppCompatActivity implements
     protected void onPause() {
         super.onPause();
 
+        System.out.println("here4");
+        barcodeView.setVisibility(View.GONE);
         barcodeView.pause();
     }
 
-    public void triggerScan(View view) {
-        barcodeView.decodeSingle(callback);
-    }
+//    public void triggerScan(View view) {
+//        barcodeView.decodeSingle(callback);
+//    }
 
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
@@ -136,6 +174,15 @@ public class CustomCaptureActivity extends AppCompatActivity implements
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
+            int count = getFragmentManager().getBackStackEntryCount();
+
+            if (count == 0) {
+//                super.onBackPressed();
+                //additional code
+            } else {
+                getFragmentManager().popBackStack();
+            }
+
         } else {
             super.onBackPressed();
         }
@@ -246,6 +293,7 @@ public class CustomCaptureActivity extends AppCompatActivity implements
 //    }
 
     public void onActivityResult(int requestCode, int resultCode, Intent intent) {
+        System.out.println("out of the way");
         if(requestCode == IntentIntegrator.REQUEST_CODE) {
             //retrieve scan result
             IntentResult scanningResult = IntentIntegrator.parseActivityResult(requestCode, resultCode, intent);
