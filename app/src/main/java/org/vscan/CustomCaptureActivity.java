@@ -13,7 +13,6 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
 import android.view.KeyEvent;
 import android.view.Menu;
@@ -41,7 +40,7 @@ import java.util.List;
  * a barcode is scanned.
  */
 public class CustomCaptureActivity extends AppCompatActivity implements
-        NavigationView.OnNavigationItemSelectedListener, View.OnClickListener {
+        NavigationView.OnNavigationItemSelectedListener {
 
     private static final String TAG = CustomCaptureActivity.class.getSimpleName();
     private DecoratedBarcodeView barcodeView;
@@ -88,6 +87,8 @@ public class CustomCaptureActivity extends AppCompatActivity implements
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
+
+
 
         db=openOrCreateDatabase("VeganDB", Context.MODE_PRIVATE, null);
         db.execSQL("CREATE TABLE IF NOT EXISTS products(barcode VARCHAR,name VARCHAR,status VARCHAR);");
@@ -180,18 +181,18 @@ public class CustomCaptureActivity extends AppCompatActivity implements
         // Handle navigation view item clicks here.
         int id = item.getItemId();
 
-        if (id == R.id.nav_camera) {
-            // Handle the camera action
-        } else if (id == R.id.nav_gallery) {
-
-        } else if (id == R.id.nav_slideshow) {
-
-        } else if (id == R.id.nav_manage) {
-
-        } else if (id == R.id.nav_share) {
-
-        } else if (id == R.id.nav_send) {
-
+        if (id == R.id.nav_favorites) {
+            Intent intent = new Intent(this, MyFavorites.class);
+            startActivity(intent);
+        } else if (id == R.id.nav_score) {
+            Intent intent = new Intent(this, MyScore.class);
+            startActivity(intent);
+        } else if (id == R.id.nav_products_data_base) {
+            Intent intent = new Intent(this, MyDB.class);
+            startActivity(intent);
+        } else if (id == R.id.nav_settings) {
+            Intent intent = new Intent(this, Settings.class);
+            startActivity(intent);
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -199,8 +200,8 @@ public class CustomCaptureActivity extends AppCompatActivity implements
         return true;
     }
 
-    @Override
-    public void onClick(View v) {
+//    @Override
+//    public void onClick(View v) {
 //        if(v.getId()==R.id.scan_button){
 //            //scan
 //            IntentIntegrator scanIntegrator = new IntentIntegrator(this);
@@ -243,7 +244,7 @@ public class CustomCaptureActivity extends AppCompatActivity implements
 //            }
 //            showMessage("פרטים", buffer.toString());
 //        }
-    }
+//    }
 
     public void onActivityResult(int requestCode, int resultCode, Intent intent) {
         if(requestCode == IntentIntegrator.REQUEST_CODE) {
