@@ -105,15 +105,12 @@ public class CustomCaptureActivity extends AppCompatActivity implements
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
-
-
         db=openOrCreateDatabase("VeganDB", Context.MODE_PRIVATE, null);
         db.execSQL("CREATE TABLE IF NOT EXISTS products(barcode VARCHAR,name VARCHAR,status VARCHAR);");
-
+        DBHelper.populateDB(this.getApplicationContext(),db);
         Cursor c=db.rawQuery("SELECT * FROM products", null);
         if(c.getCount()==0)
         {
-            // db.execSQL("INSERT INTO products VALUES(barcode,name,company,type,is_vegan,list_why_not,image);");
             db.execSQL("INSERT INTO products VALUES('7290013085610','פסטה פנה אורגני','VEGAN');");
             db.execSQL("INSERT INTO products VALUES('7290013085611','פסטה פנה','NOT VEGAN');");
         }
