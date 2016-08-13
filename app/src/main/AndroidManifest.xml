@@ -27,6 +27,10 @@
             android:name=".CustomCaptureActivity"
             android:screenOrientation="fullSensor"
             tools:replace="screenOrientation" />
+        <activity android:name=".MyFavorites" />
+        <activity android:name=".MyScore" />
+        <activity android:name=".MyDB" />
+        <activity android:name=".Settings"></activity>
     </application>
 
 </manifest>
